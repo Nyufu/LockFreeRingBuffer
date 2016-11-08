@@ -9,16 +9,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Allocator.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="include\Config.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\LockFreeRingBuffer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Utilities.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\WinAPI_inline.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

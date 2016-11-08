@@ -1,7 +1,7 @@
 // MIT License
-// 
+//
 // Copyright (c) 2016 Andris Nyiscsák
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -27,3 +27,12 @@
 #if !defined( _CONSTEXPR14 )
 #define _CONSTEXPR14 inline
 #endif /* _HAS_CONSTEXPR14 */
+
+#define WINAPI_ALLOCATOR 1
+
+constexpr int _debug =
+#if defined(_DEBUG)
+1;
+#else
+0;
+#endif

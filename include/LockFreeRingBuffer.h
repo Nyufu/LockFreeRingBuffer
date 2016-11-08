@@ -1,7 +1,7 @@
 // MIT License
-// 
+//
 // Copyright (c) 2016 Andris Nyiscsák
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -22,17 +22,14 @@
 
 #pragma once
 
-#include <atomic>
-#include <intrin.h>
-#include <cassert>
 #include "Config.h"
-#include "WinAPI_inline.h"
-#include "Utilities.h"
+#include <atomic>
+#include "Allocator.h"
 
-template<class _Ty>
+template<class _Ty, class _Alloc = Allocator<_Ty>>
 class LockFreeRingBuffer {
 
-	static_assert(std::is_pod_v<_Ty>, "This ringbufffer stil doesn't work with non POD types.");
+	static_assert(_STD is_pod_v<_Ty>, "This ringbufffer stil doesn't work with non POD types.");
 
 private:
 	LockFreeRingBuffer() = delete;
@@ -44,7 +41,7 @@ private:
 	LockFreeRingBuffer& operator=(LockFreeRingBuffer&&) = delete;
 
 public:
-	_CONSTEXPR14 LockFreeRingBuffer(size_t size) noexcept;
+	_CONSTEXPR14 LockFreeRingBuffer(uint32_t size) noexcept;
 	~LockFreeRingBuffer() noexcept;
 
 	_CONSTEXPR14 bool enqueue(_Ty value) noexcept;
@@ -55,10 +52,9 @@ public:
 
 #if (defined (_TEST) && _TEST)
 
-  _CONSTEXPR14 auto max() const noexcept
-  {
-    return last.load( std::memory_order_relaxed );
-  }
+	_CONSTEXPR14 auto max() const noexcept {
+		return last.load(_STD memory_order_relaxed);
+	}
 
 #endif
 
@@ -67,69 +63,79 @@ protected:
 
 	_Ty* const data;
 
-	std::atomic_uint64_t reserver;
-	std::atomic_uint64_t first;
-	std::atomic_uint64_t last;
+	_STD atomic_uint64_t reserver;
+	_STD atomic_uint64_t last;
+	_STD atomic_uint64_t first;
 };
 
-template<class _Ty>
-_CONSTEXPR14 LockFreeRingBuffer<_Ty>::LockFreeRingBuffer(size_t size) noexcept
-	: capacity{ (2ull << __lzcnt64(size)) - 1 }
-	, data{ reinterpret_cast<decltype(data)>(::HeapAlloc(GetProcessHeap_(), (_debug ? HEAP_ZERO_MEMORY : 0), (capacity + 1) * sizeof(_Ty))) }
+#if defined(__clang__) && __clang__
+#define lzcnt64(x) __builtin_clzll(x)
+#else
+#define lzcnt64(x) __lzcnt64(x)
+#endif
+
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 LockFreeRingBuffer<_Ty, _Alloc>::LockFreeRingBuffer(uint32_t size) noexcept
+	: capacity{ (2ull << lzcnt64(size)) - 1 }
+	, data{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr }
 	, reserver{ 0 }
-	, first{ 0 }
-	, last{ 0 } {
-	assert(size > 0);
-	assert(data);
+	, last{ 0 }
+	, first{ 0 } {
+	assert((size != 0 && data != nullptr) || (size == 0 && data == nullptr));
 }
 
-template<class _Ty>
-LockFreeRingBuffer<_Ty>::~LockFreeRingBuffer() noexcept {
-	auto result = ::HeapFree(GetProcessHeap_(), 0, reinterpret_cast<void*>(data)); assert(result); UNUSED(result);
+template<class _Ty, class _Alloc>
+LockFreeRingBuffer<_Ty, _Alloc>::~LockFreeRingBuffer() noexcept {
+	_Alloc::DeAllocate(data);
 }
 
-template<class _Ty>
-_CONSTEXPR14 bool LockFreeRingBuffer<_Ty>::enqueue(_Ty value) noexcept {
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::enqueue(_Ty value) noexcept {
 	uint64_t currentReserver = 0;
 	uint64_t reserverPlusOn = 0;
 
+	const auto mask = capacity;
+
 	do {
-		currentReserver = reserver.load(std::memory_order_acquire);
+		currentReserver = reserver.load(_STD memory_order_acquire);
+		auto currentLast = last.load(_STD memory_order_acquire);
+
 		reserverPlusOn = currentReserver + 1;
 
-		auto currentLast = last.load(std::memory_order_acquire);
-
-		if ((reserverPlusOn & capacity) == (currentLast & capacity))
+		if ((reserverPlusOn & mask) == (currentLast & mask))
 			return false;
 
-	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOn, std::memory_order_release, std::memory_order_relaxed));
+	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOn, _STD memory_order_release, _STD memory_order_relaxed));
 
-	data[currentReserver & capacity] = std::move(value);
+	data[currentReserver & mask] = value;
 
 	auto expectedFirst = currentReserver;
 
-	while (!first.compare_exchange_weak(expectedFirst, reserverPlusOn, std::memory_order_release, std::memory_order_relaxed))
+	while (!first.compare_exchange_weak(expectedFirst, reserverPlusOn, _STD memory_order_release, _STD memory_order_relaxed))
 		expectedFirst = currentReserver;
 
 	return true;
 }
 
-template<class _Ty>
-_CONSTEXPR14 bool LockFreeRingBuffer<_Ty>::try_dequeue(_Ty& value) noexcept {
-	auto currentLast = last.load(std::memory_order_acquire);
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
+	const auto mask = capacity;
+	const auto ptr = data;
+
+	auto currentLast = last.load(_STD memory_order_acquire);
 
 	do {
-		if (first.load(std::memory_order_acquire) == currentLast)
+		if (first.load(_STD memory_order_acquire) == currentLast)
 			return false;
 
-		value = std::move(data[currentLast & capacity]);
+		value = ptr[currentLast & mask];
 
-	} while (!last.compare_exchange_weak(currentLast, currentLast + 1, std::memory_order_release, std::memory_order_relaxed));
+	} while (!last.compare_exchange_weak(currentLast, currentLast + 1, _STD memory_order_release, _STD memory_order_relaxed));
 
 	return true;
 }
 
-template<class _Ty>
-_CONSTEXPR14 size_t LockFreeRingBuffer<_Ty>::size_approx() const noexcept {
-	return first.load(std::memory_order_relaxed) - last.load(std::memory_order_relaxed);
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 size_t LockFreeRingBuffer<_Ty, _Alloc>::size_approx() const noexcept {
+	return first.load(_STD memory_order_relaxed) - last.load(_STD memory_order_relaxed);
 }

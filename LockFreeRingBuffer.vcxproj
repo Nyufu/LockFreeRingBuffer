@@ -85,10 +85,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Allocator.h" />
     <ClInclude Include="include\Config.h" />
     <ClInclude Include="include\LockFreeRingBuffer.h" />
-    <ClInclude Include="include\Utilities.h" />
-    <ClInclude Include="include\WinAPI_inline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp" />
