@@ -1,7 +1,7 @@
 // MIT License
-// 
+//
 // Copyright (c) 2016 Andris Nyiscsák
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -35,150 +35,160 @@
 using namespace std::chrono_literals;
 
 #pragma optimize( "", off )
-__declspec( noinline ) void bla( int )
-{
+__declspec(noinline) void bla(int) {
 }
 #pragma optimize( "", on )
 
-constexpr size_t Number = 4;
+constexpr size_t Number = 2;
 constexpr auto timeLimit = 1000ms;
 
-int main()
-{
-  LockFreeRingBuffer<int> ringBuffer{ 2000 };
+int main() {
+	LockFreeRingBuffer<int> ringBuffer{ 2000 };
 
-  std::atomic_int64_t event_ = 0;
-  std::atomic_bool runIt = true;
+	std::atomic_int64_t event_(0ll);
+	std::atomic_bool runIt(true);
 
-  std::atomic_int64_t counters[ Number ];
-  for ( size_t i = 0; i < Number; i++ )
-    counters[ i ].store( 0 );
+	int64_t countersProducer[Number + 1];
+	int64_t countersConsumer[Number + 1];
 
-  std::thread producer[ Number ] = {
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]( const int i ) {
-      auto t = i + 1;
+	for (size_t i = 0; i < Number + 1; i++) {
+		countersProducer[i] = 0;
+		countersConsumer[i] = 0;
+	}
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+	std::thread producer[Number] = {
+		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			auto t = i + 1;
 
-      while ( runIt )
-        if ( ringBuffer.enqueue( t ) )
-          counters[ i ]++;
-    }, 0 ),
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]( const int i ) {
-      auto t = i + 1;
+			while (runIt)
+				if (ringBuffer.enqueue(t))
+					countersProducer[t]++;
+		}, 0),
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			auto t = i + 1;
 
-      while ( runIt )
-        if ( ringBuffer.enqueue( t ) )
-          counters[ i ]++;
-    }, 1 ),
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]( const int i ) {
-      auto t = i + 1;
+			while (runIt)
+				if (ringBuffer.enqueue(t))
+					countersProducer[t]++;
+		}, 1),
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			auto t = i + 1;
 
-      while ( runIt )
-        if ( ringBuffer.enqueue( t ) )
-          counters[ i ]++;
-    }, 2 ),
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]( const int i ) {
-      auto t = i + 1;
+			while (runIt)
+				if (ringBuffer.enqueue(t))
+					countersProducer[t]++;
+		}, 2),
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			auto t = i + 1;
 
-      while ( runIt )
-        if ( ringBuffer.enqueue( t ) )
-          counters[ i ]++;
-    }, 3 )
-  };
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-  std::thread consumer[ Number ] = {
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]() {
-      int value = 0;
+			while (runIt)
+				if (ringBuffer.enqueue(t))
+					countersProducer[t]++;
+		}, 3)
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+	};
 
-      while ( runIt )
-        if ( ringBuffer.try_dequeue( value ) )
-          counters[ value - 1 ]--;
-    } ),
+	std::thread consumer[Number] = {
+		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			int value = 0;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]() {
-      int value = 0;
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+			while (runIt)
+				if (ringBuffer.try_dequeue(value))
+					countersConsumer[value]++;
+		}),
 
-      while ( runIt )
-        if ( ringBuffer.try_dequeue( value ) )
-          counters[ value - 1 ]--;
-    } ),
+		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			int value = 0;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]() {
-      int value = 0;
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+			while (runIt)
+				if (ringBuffer.try_dequeue(value))
+					countersConsumer[value]++;
+		}),
 
-      while ( runIt )
-        if ( ringBuffer.try_dequeue( value ) )
-          counters[ value - 1 ]--;
-    } ),
+		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			int value = 0;
 
-    std::thread( [ &ringBuffer, &event_, &runIt, &counters ]() {
-      int value = 0;
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-      event_++;
-      while ( event_.load() != ( Number * 2 ) );
+			while (runIt)
+				if (ringBuffer.try_dequeue(value))
+					countersConsumer[value]++;
+		}),
 
-      while ( runIt )
-        if ( ringBuffer.try_dequeue( value ) )
-          counters[ value - 1 ]--;
-    } )
-  };
+		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			int value = 0;
 
-  while ( event_.load() != ( Number * 2 ) );
+			event_++;
+			while (event_.load() != (Number * 2))
+				;
 
-  std::this_thread::sleep_for( timeLimit );
+			while (runIt)
+				if (ringBuffer.try_dequeue(value))
+					countersConsumer[value]++;
+		})
+	};
 
-  runIt.store( false );
+	while (event_.load() != (Number * 2));
 
-  for ( size_t i = 0; i < Number; i++ )
-  {
-    producer[ i ].join();
-    consumer[ i ].join();
-  }
+	std::this_thread::sleep_for(timeLimit);
 
-  {
-    int value = 0;
+	runIt.store(false);
 
-    while ( ringBuffer.try_dequeue( value ) )
-      counters[ value - 1 ]--;
-  }
+	for (size_t i = 0; i < Number; i++) {
+		producer[i].join();
+		consumer[i].join();
+	}
 
-  auto remainedInQueue = ringBuffer.size_approx();
+	{
+		int value = 0;
 
-  int64_t summary = 0;
-  for ( size_t i = 0; i < Number; i++ )
-    summary += counters[ i ];
+		while (ringBuffer.try_dequeue(value))
+			countersConsumer[value]++;
+	}
 
-  std::cout << "remainedInQueue: " << remainedInQueue << "\n";
-  std::cout << "Counters summary: " << summary << "\n";
+	auto remainedInQueue = ringBuffer.size_approx();
+
+	int64_t summary = 0;
+	for (size_t i = 0; i < Number; i++)
+		summary += countersProducer[i] - countersConsumer[i];
+
+	std::cout << "remainedInQueue: " << remainedInQueue << "\n";
+	std::cout << "Counters summary: " << summary << "\n";
 
 #if (defined (_TEST) && _TEST)
 
-  std::cout << "number of iops: " << ringBuffer.max() << "\n";
+	std::cout << "number of iops: " << ringBuffer.max() << "\n";
 
 #endif
 
-  return 0;
+	return 0;
 }
