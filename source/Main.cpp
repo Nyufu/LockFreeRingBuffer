@@ -51,9 +51,9 @@ int main() {
 	int64_t countersProducer[Number + 1];
 	int64_t countersConsumer[Number + 1];
 
-	for (size_t i = 0; i < Number + 1; i++) {
-		countersProducer[i] = 0;
-		countersConsumer[i] = 0;
+	for (size_t i = 0; i < Number; i++) {
+		countersProducer[i + 1] = 0;
+		countersConsumer[i + 1] = 0;
 	}
 
 	std::thread producer[Number] = {
@@ -104,7 +104,6 @@ int main() {
 				if (ringBuffer.enqueue(t))
 					countersProducer[t]++;
 		}, 3)
-
 	};
 
 	std::thread consumer[Number] = {
@@ -117,7 +116,7 @@ int main() {
 
 			while (runIt)
 				if (ringBuffer.try_dequeue(value))
-					countersConsumer[value]++;
+					InterlockedIncrement64(&countersConsumer[value]);
 		}),
 
 		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
@@ -129,7 +128,7 @@ int main() {
 
 			while (runIt)
 				if (ringBuffer.try_dequeue(value))
-					countersConsumer[value]++;
+					InterlockedIncrement64(&countersConsumer[value]);
 		}),
 
 		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
@@ -141,7 +140,7 @@ int main() {
 
 			while (runIt)
 				if (ringBuffer.try_dequeue(value))
-					countersConsumer[value]++;
+					InterlockedIncrement64(&countersConsumer[value]);
 		}),
 
 		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
@@ -153,7 +152,7 @@ int main() {
 
 			while (runIt)
 				if (ringBuffer.try_dequeue(value))
-					countersConsumer[value]++;
+					InterlockedIncrement64(&countersConsumer[value]);
 		})
 	};
 
@@ -179,7 +178,7 @@ int main() {
 
 	int64_t summary = 0;
 	for (size_t i = 0; i < Number; i++)
-		summary += countersProducer[i] - countersConsumer[i];
+		summary += countersProducer[i + 1] - countersConsumer[i + 1];
 
 	std::cout << "remainedInQueue: " << remainedInQueue << "\n";
 	std::cout << "Counters summary: " << summary << "\n";
