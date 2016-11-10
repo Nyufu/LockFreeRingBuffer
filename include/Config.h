@@ -28,7 +28,7 @@
 #define _CONSTEXPR14 inline
 #endif /* _HAS_CONSTEXPR14 */
 
-#define WINAPI_ALLOCATOR 1
+#define WINAPI_ALLOCATOR 0
 
 constexpr int _debug =
 #if defined(_DEBUG)

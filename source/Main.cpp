@@ -26,21 +26,25 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <intrin.h>
 
 #pragma warning( pop )
 
 #define _TEST 1
 #include "LockFreeRingBuffer.h"
 
-using namespace std::chrono_literals;
+#pragma warning( push, 0 )
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#pragma warning( pop )
 
-#pragma optimize( "", off )
-__declspec(noinline) void bla(int) {
-}
-#pragma optimize( "", on )
+using namespace std::chrono_literals;
 
 constexpr size_t Number = 2;
 constexpr auto timeLimit = 1000ms;
+
+void Test2();
 
 int main() {
 	LockFreeRingBuffer<int> ringBuffer{ 2000 };
@@ -81,29 +85,29 @@ int main() {
 					countersProducer[t]++;
 		}, 1),
 
-		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
-			auto t = i + 1;
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.enqueue(t))
-					countersProducer[t]++;
-		}, 2),
-
-		std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
-			auto t = i + 1;
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.enqueue(t))
-					countersProducer[t]++;
-		}, 3)
+			//std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			//	auto t = i + 1;
+			//
+			//	event_++;
+			//	while (event_.load() != (Number * 2))
+			//		;
+			//
+			//	while (runIt)
+			//		if (ringBuffer.enqueue(t))
+			//			countersProducer[t]++;
+			//}, 2),
+			//
+			//std::thread([&ringBuffer, &event_, &runIt, &countersProducer](const int i) {
+			//	auto t = i + 1;
+			//
+			//	event_++;
+			//	while (event_.load() != (Number * 2))
+			//		;
+			//
+			//	while (runIt)
+			//		if (ringBuffer.enqueue(t))
+			//			countersProducer[t]++;
+			//}, 3)
 	};
 
 	std::thread consumer[Number] = {
@@ -131,29 +135,29 @@ int main() {
 					InterlockedIncrement64(&countersConsumer[value]);
 		}),
 
-		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
-			int value = 0;
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.try_dequeue(value))
-					InterlockedIncrement64(&countersConsumer[value]);
-		}),
-
-		std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
-			int value = 0;
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.try_dequeue(value))
-					InterlockedIncrement64(&countersConsumer[value]);
-		})
+			//std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			//	int value = 0;
+			//
+			//	event_++;
+			//	while (event_.load() != (Number * 2))
+			//		;
+			//
+			//	while (runIt)
+			//		if (ringBuffer.try_dequeue(value))
+			//			InterlockedIncrement64(&countersConsumer[value]);
+			//}),
+			//
+			//std::thread([&ringBuffer, &event_, &runIt, &countersConsumer]() {
+			//	int value = 0;
+			//
+			//	event_++;
+			//	while (event_.load() != (Number * 2))
+			//		;
+			//
+			//	while (runIt)
+			//		if (ringBuffer.try_dequeue(value))
+			//			InterlockedIncrement64(&countersConsumer[value]);
+			//})
 	};
 
 	while (event_.load() != (Number * 2));
@@ -189,5 +193,16 @@ int main() {
 
 #endif
 
+	Test2();
+
 	return 0;
+}
+
+void Test2() {
+	LockFreeRingBuffer<std::vector<int>> ringBuffer{ 2000 };
+	ringBuffer.enqueue(std::vector<int>{1});
+
+	std::vector<int> vec;
+	ringBuffer.try_dequeue(vec);
+	ringBuffer.try_dequeue(vec);
 }

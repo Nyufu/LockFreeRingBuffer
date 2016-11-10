@@ -26,25 +26,28 @@
 #include <atomic>
 #include "Allocator.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4711)
+#endif
+
 template<class _Ty, class _Alloc = Allocator<_Ty>>
-class LockFreeRingBuffer {
-
-	static_assert(_STD is_pod_v<_Ty>, "This ringbufffer stil doesn't work with non POD types.");
-
+class LockFreeRingBufferTrivialMovable {
 private:
-	LockFreeRingBuffer() = delete;
+	LockFreeRingBufferTrivialMovable() = delete;
 
-	LockFreeRingBuffer(const LockFreeRingBuffer&) = delete;
-	LockFreeRingBuffer(LockFreeRingBuffer&&) = delete;
+	LockFreeRingBufferTrivialMovable(const LockFreeRingBufferTrivialMovable&) = delete;
+	LockFreeRingBufferTrivialMovable(LockFreeRingBufferTrivialMovable&&) = delete;
 
-	LockFreeRingBuffer& operator=(const LockFreeRingBuffer&) = delete;
-	LockFreeRingBuffer& operator=(LockFreeRingBuffer&&) = delete;
+	LockFreeRingBufferTrivialMovable& operator=(const LockFreeRingBufferTrivialMovable&) = delete;
+	LockFreeRingBufferTrivialMovable& operator=(LockFreeRingBufferTrivialMovable&&) = delete;
 
 public:
-	_CONSTEXPR14 LockFreeRingBuffer(uint32_t size) noexcept;
-	~LockFreeRingBuffer() noexcept;
+	_CONSTEXPR14 LockFreeRingBufferTrivialMovable(uint32_t size) noexcept;
+	~LockFreeRingBufferTrivialMovable() noexcept;
 
-	_CONSTEXPR14 bool enqueue(_Ty value) noexcept;
+	_CONSTEXPR14 bool enqueue(_Ty& value) noexcept;
+	_CONSTEXPR14 bool enqueue(_Ty&& value) noexcept;
 
 	_CONSTEXPR14 bool try_dequeue(_Ty& value) noexcept;
 
@@ -68,6 +71,29 @@ protected:
 	_STD atomic_uint64_t first;
 };
 
+template<class _Ty, class _Alloc = Allocator<_Ty>>
+class LockFreeRingBufferNonTrivialMovable : public LockFreeRingBufferTrivialMovable<_Ty, _Alloc> {
+private:
+	LockFreeRingBufferNonTrivialMovable() = delete;
+
+	LockFreeRingBufferNonTrivialMovable(const LockFreeRingBufferNonTrivialMovable&) = delete;
+	LockFreeRingBufferNonTrivialMovable(LockFreeRingBufferNonTrivialMovable&&) = delete;
+
+	LockFreeRingBufferNonTrivialMovable& operator=(const LockFreeRingBufferNonTrivialMovable&) = delete;
+	LockFreeRingBufferNonTrivialMovable& operator=(LockFreeRingBufferNonTrivialMovable&&) = delete;
+
+protected:
+	using MyBase = LockFreeRingBufferTrivialMovable<_Ty, _Alloc>;
+
+public:
+	_CONSTEXPR14 LockFreeRingBufferNonTrivialMovable(uint32_t size) noexcept;
+
+	_CONSTEXPR14 bool try_dequeue(_Ty& value) noexcept;
+
+protected:
+	_STD atomic_uint64_t lastReserver;
+};
+
 #if defined(__clang__) && __clang__
 #define lzcnt64(x) __builtin_clzll(x)
 #else
@@ -75,7 +101,7 @@ protected:
 #endif
 
 template<class _Ty, class _Alloc>
-_CONSTEXPR14 LockFreeRingBuffer<_Ty, _Alloc>::LockFreeRingBuffer(uint32_t size) noexcept
+_CONSTEXPR14 LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(uint32_t size) noexcept
 	: capacity{ (2ull << lzcnt64(size)) - 1 }
 	, data{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr }
 	, reserver{ 0 }
@@ -85,12 +111,40 @@ _CONSTEXPR14 LockFreeRingBuffer<_Ty, _Alloc>::LockFreeRingBuffer(uint32_t size) 
 }
 
 template<class _Ty, class _Alloc>
-LockFreeRingBuffer<_Ty, _Alloc>::~LockFreeRingBuffer() noexcept {
+LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::~LockFreeRingBufferTrivialMovable() noexcept {
 	_Alloc::DeAllocate(data);
 }
 
 template<class _Ty, class _Alloc>
-_CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::enqueue(_Ty value) noexcept {
+_CONSTEXPR14 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty& value) noexcept {
+	uint64_t currentReserver = 0;
+	uint64_t reserverPlusOne = 0;
+
+	const auto mask = capacity;
+
+	do {
+		currentReserver = reserver.load(_STD memory_order_acquire);
+		auto currentLast = last.load(_STD memory_order_acquire);
+
+		reserverPlusOne = currentReserver + 1;
+
+		if ((reserverPlusOne & mask) == (currentLast & mask))
+			return false;
+
+	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOne, _STD memory_order_release, _STD memory_order_relaxed));
+
+	data[currentReserver & mask] = _STD forward<_Ty>(value);
+
+	auto expectedFirst = currentReserver;
+
+	while (!first.compare_exchange_weak(expectedFirst, reserverPlusOne, _STD memory_order_release, _STD memory_order_relaxed))
+		expectedFirst = currentReserver;
+
+	return true;
+}
+
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcept {
 	uint64_t currentReserver = 0;
 	uint64_t reserverPlusOn = 0;
 
@@ -107,7 +161,7 @@ _CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::enqueue(_Ty value) noexcept {
 
 	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOn, _STD memory_order_release, _STD memory_order_relaxed));
 
-	data[currentReserver & mask] = value;
+	data[currentReserver & mask] = _STD forward<_Ty>(value);
 
 	auto expectedFirst = currentReserver;
 
@@ -118,7 +172,7 @@ _CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::enqueue(_Ty value) noexcept {
 }
 
 template<class _Ty, class _Alloc>
-_CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
+_CONSTEXPR14 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
 	const auto mask = capacity;
 	const auto ptr = data;
 
@@ -136,6 +190,52 @@ _CONSTEXPR14 bool LockFreeRingBuffer<_Ty, _Alloc>::try_dequeue(_Ty& value) noexc
 }
 
 template<class _Ty, class _Alloc>
-_CONSTEXPR14 size_t LockFreeRingBuffer<_Ty, _Alloc>::size_approx() const noexcept {
+_CONSTEXPR14 size_t LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::size_approx() const noexcept {
 	return first.load(_STD memory_order_relaxed) - last.load(_STD memory_order_relaxed);
 }
+
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMovable(uint32_t size) noexcept
+	: MyBase(size),
+	lastReserver{ 0 } {
+}
+
+template<class _Ty, class _Alloc>
+_CONSTEXPR14 bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
+	uint64_t currentReserver = 0;
+	uint64_t reserverPlusOn = 0;
+
+	const auto mask = MyBase::capacity;
+
+	do {
+		auto currentFist = MyBase::first.load(_STD memory_order_acquire);
+		currentReserver = lastReserver.load(_STD memory_order_acquire);
+
+		if ((currentFist & mask) == (currentReserver & mask))
+			return false;
+
+		reserverPlusOn = currentReserver + 1;
+
+	} while (!lastReserver.compare_exchange_weak(currentReserver, reserverPlusOn, _STD memory_order_release, _STD memory_order_relaxed));
+
+	value = _STD move(MyBase::data[currentReserver & mask]);
+
+	auto expectedLast = currentReserver;
+
+	while (!MyBase::last.compare_exchange_weak(expectedLast, reserverPlusOn, _STD memory_order_release, _STD memory_order_relaxed))
+		expectedLast = currentReserver;
+
+	return true;
+}
+
+template<class _Ty, class _Alloc = Allocator<_Ty>>
+using LockFreeRingBuffer =
+_STD conditional_t <
+	_STD is_trivially_move_assignable<_Ty>::value,
+	LockFreeRingBufferTrivialMovable<_Ty, _Alloc>,
+	LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>
+>;
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
