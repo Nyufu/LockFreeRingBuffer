@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "LockFreeRingBuffer.h"
+
 #pragma warning( push, 0 )
 
 #include <iostream>
@@ -28,15 +30,10 @@
 #include <chrono>
 #include <intrin.h>
 
-#pragma warning( pop )
-
-#define _TEST 1
-#include "LockFreeRingBuffer.h"
-
-#pragma warning( push, 0 )
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
+
 #pragma warning( pop )
 
 using namespace std::chrono_literals;
@@ -47,11 +44,11 @@ constexpr auto timeLimit = 1000ms;
 void Test1();
 void Test2();
 
-int main() {	
-  Test1();
-  Test2();
+int main() {
+	Test1();
+	Test2();
 
-  return 0;
+	return 0;
 }
 
 void Test1() {
@@ -229,6 +226,5 @@ void Test2() {
 	std::vector<int> vec;
 	ringBuffer.try_dequeue(vec);
 	ringBuffer.try_dequeue(vec);
-  ringBuffer.enqueue(vec);
+	ringBuffer.enqueue(vec);
 }
-

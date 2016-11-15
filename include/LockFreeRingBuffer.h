@@ -127,8 +127,8 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) no
 
 	data[reserved] = value;
 
-  for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserver)
-	;
+	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserver)
+		;
 
 	return true;
 }
@@ -153,8 +153,8 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcep
 
 	data[reserved] = _STD forward<_Ty>(value);
 
-  for (auto savedReserved = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserved)
-	;
+	for (auto savedReserved = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserved)
+		;
 
 	return true;
 }
@@ -199,7 +199,7 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) n
 		currentReserver = lastReserver.load();
 		reserverPlusOne = (currentReserver + 1) & mask;
 
-		if ( MyBase::first.load() == reserverPlusOne)
+		if (MyBase::first.load() == reserverPlusOne)
 			return false;
 
 	} while (!lastReserver.compare_exchange_weak(currentReserver, reserverPlusOne));
@@ -216,11 +216,11 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) n
 
 template<class _Ty, class _Alloc = Allocator<_Ty>>
 using LockFreeRingBuffer =
-	_STD conditional_t <
-		_STD is_trivially_move_assignable<_Ty>::value,
-		LockFreeRingBufferTrivialMovable<_Ty, _Alloc>,
-		LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>
-	>;
+_STD conditional_t <
+	_STD is_trivially_move_assignable<_Ty>::value,
+	LockFreeRingBufferTrivialMovable<_Ty, _Alloc>,
+	LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>
+>;
 
 #ifdef _MSC_VER
 #pragma warning(pop)
