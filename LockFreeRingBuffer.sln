@@ -1,5 +1,11 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LockFreeRingBuffer", "LockFreeRingBuffer.vcxproj", "{E45D5FC8-FCD5-47EC-B738-F1B2B4902A3B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest.vcxproj", "{5393D367-708E-468F-9AFC-18D4627786E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +23,14 @@ Global
 		{E45D5FC8-FCD5-47EC-B738-F1B2B4902A3B}.Release_Clang|x64.Build.0 = Release_Clang|x64
 		{E45D5FC8-FCD5-47EC-B738-F1B2B4902A3B}.Release|x64.ActiveCfg = Release|x64
 		{E45D5FC8-FCD5-47EC-B738-F1B2B4902A3B}.Release|x64.Build.0 = Release|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Debug_Clang|x64.ActiveCfg = Debug_Clang|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Debug_Clang|x64.Build.0 = Debug_Clang|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Debug|x64.ActiveCfg = Debug|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Debug|x64.Build.0 = Debug|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Release_Clang|x64.ActiveCfg = Release_Clang|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Release_Clang|x64.Build.0 = Release_Clang|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Release|x64.ActiveCfg = Release|x64
+		{5393D367-708E-468F-9AFC-18D4627786E7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,8 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "LockFreeRingBuffer.h"
-
 #pragma warning( push, 0 )
 
 #include <iostream>
@@ -35,6 +33,8 @@
 #include <Windows.h>
 
 #pragma warning( pop )
+
+#include "LockFreeRingBuffer.h"
 
 using namespace std::chrono_literals;
 
