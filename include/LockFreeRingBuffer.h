@@ -112,23 +112,22 @@ template<class _Ty, class _Alloc>
 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) noexcept {
 	const auto mask = capacity_;
 
-	uint64_t currentReserver = 0;
-	uint64_t reserverPlusOne = 0;
+	auto candidate = reserver.load();
+	decltype(candidate) incremented = 0;
 
 	do {
-		currentReserver = reserver.load();
-		reserverPlusOne = (currentReserver + 1) & mask;
+		incremented = (candidate + 1) & mask;
 
-		if (last.load() == reserverPlusOne)
+		if (last.load() == incremented)
 			return false;
 
-	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOne));
+	} while (!reserver.compare_exchange_weak(candidate, incremented));
 
-	auto reserved = currentReserver;
+	auto reserved = candidate;
 
 	data[reserved] = value;
 
-	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserver)
+	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
 
 	return true;
@@ -138,23 +137,22 @@ template<class _Ty, class _Alloc>
 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcept {
 	const auto mask = capacity_;
 
-	uint64_t currentReserver = 0;
-	uint64_t reserverPlusOne = 0;
+	auto candidate = reserver.load();
+	decltype(candidate) incremented = 0;
 
 	do {
-		currentReserver = reserver.load();
-		reserverPlusOne = (currentReserver + 1) & mask;
+		incremented = (candidate + 1) & mask;
 
-		if (last.load() == reserverPlusOne)
+		if (last.load() == incremented)
 			return false;
 
-	} while (!reserver.compare_exchange_weak(currentReserver, reserverPlusOne));
+	} while (!reserver.compare_exchange_weak(candidate, incremented));
 
-	auto reserved = currentReserver;
+	auto reserved = candidate;
 
 	data[reserved] = _STD forward<_Ty>(value);
 
-	for (auto savedReserved = reserved; !first.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserved)
+	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
 
 	return true;
@@ -198,23 +196,22 @@ template<class _Ty, class _Alloc>
 bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
 	const auto mask = MyBase::capacity_;
 
-	uint64_t currentReserver = 0;
-	uint64_t reserverPlusOne = 0;
+	auto candidate = lastReserver.load();
+	decltype(candidate) incremented = 0;
 
 	do {
-		currentReserver = lastReserver.load();
-		reserverPlusOne = (currentReserver + 1) & mask;
+		incremented = (candidate + 1) & mask;
 
-		if (MyBase::first.load() == reserverPlusOne)
+		if (MyBase::first.load() == incremented)
 			return false;
 
-	} while (!lastReserver.compare_exchange_weak(currentReserver, reserverPlusOne));
+	} while (!lastReserver.compare_exchange_weak(candidate, incremented));
 
-	auto reserved = currentReserver;
+	auto reserved = candidate;
 
 	value = _STD move(MyBase::data[reserved]);
 
-	for (auto savedReserved = reserved; !MyBase::last.compare_exchange_weak(reserved, reserverPlusOne); reserved = savedReserved)
+	for (auto savedReserved = reserved; !MyBase::last.compare_exchange_weak(reserved, incremented); reserved = savedReserved)
 		;
 
 	return true;
