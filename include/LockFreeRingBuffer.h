@@ -23,6 +23,7 @@
 #pragma once
 
 #include "Config.h"
+#include <intrin.h>
 #include <atomic>
 #include "Allocator.h"
 

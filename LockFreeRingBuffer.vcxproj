@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_Clang|x64">
       <Configuration>Debug_Clang</Configuration>
@@ -32,10 +32,10 @@
     <IntDir>$(SolutionDir)out\tmp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="!$(Configuration.Contains('Clang'))" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Clang'))" Label="Configuration">
-    <PlatformToolset>v140_clang_c2</PlatformToolset>
+    <PlatformToolset>v141_clang_c2</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -50,10 +50,13 @@
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))" Label="Configuration">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup>
+    <ThirdPartyDir>$(ProjectDir)thirdparty\</ThirdPartyDir>
+    <IncludePath>$(IncludePath);$(ThirdPartyDir)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)thirdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -63,12 +66,16 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="!$(Configuration.Contains('Clang'))">
     <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <DisableSpecificWarnings>4514;4710;4711</DisableSpecificWarnings>
-      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(Configuration.Contains('Clang'))">
     <ClCompile>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalOptions>-std=c++1z %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
