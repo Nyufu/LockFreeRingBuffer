@@ -134,7 +134,7 @@ void Test1() {
 				;
 
 			while (runIt)
-				if (ringBuffer.try_dequeue(value))
+				if (ringBuffer.dequeue(value))
 					localConsumerCounter[value]++;
 
 			for (size_t i = 0; i < Number; i++)
@@ -151,7 +151,7 @@ void Test1() {
 				;
 
 			while (runIt)
-				if (ringBuffer.try_dequeue(value))
+				if (ringBuffer.dequeue(value))
 					localConsumerCounter[value]++;
 
 			for (size_t i = 0; i < Number; i++)
@@ -168,7 +168,7 @@ void Test1() {
 				;
 
 			while (runIt)
-				if (ringBuffer.try_dequeue(value))
+				if (ringBuffer.dequeue(value))
 					localConsumerCounter[value]++;
 
 			for (size_t i = 0; i < Number; i++)
@@ -185,7 +185,7 @@ void Test1() {
 				;
 
 			while (runIt)
-				if (ringBuffer.try_dequeue(value))
+				if (ringBuffer.dequeue(value))
 					localConsumerCounter[value]++;
 
 			for (size_t i = 0; i < Number; i++)
@@ -208,7 +208,7 @@ void Test1() {
 	{
 		int value = 0;
 
-		while (ringBuffer.try_dequeue(value))
+		while (ringBuffer.dequeue(value))
 			counterConsumer.fetch_add(1);
 	}
 
@@ -224,7 +224,7 @@ void Test2() {
 	ringBuffer.enqueue(std::vector<int>{1});
 
 	std::vector<int> vec;
-	ringBuffer.try_dequeue(vec);
-	ringBuffer.try_dequeue(vec);
+	ringBuffer.dequeue(vec);
+	ringBuffer.dequeue(vec);
 	ringBuffer.enqueue(vec);
 }

@@ -38,5 +38,8 @@
     <ClCompile Include="unittests\CreateRingbuffer.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
+    <ClCompile Include="unittests\AllocateBuffer.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

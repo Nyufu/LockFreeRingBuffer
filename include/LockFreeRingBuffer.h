@@ -50,7 +50,7 @@ public:
 	bool enqueue(const _Ty& value) noexcept;
 	bool enqueue(_Ty&& value) noexcept;
 
-	bool try_dequeue(_Ty& value) noexcept;
+	bool dequeue(_Ty& value) noexcept;
 
 	size_t capacity() const noexcept;
 	size_t size_approx() const noexcept;
@@ -82,7 +82,7 @@ protected:
 public:
 	LockFreeRingBufferNonTrivialMovable(uint32_t size) noexcept;
 
-	bool try_dequeue(_Ty& value) noexcept;
+	bool dequeue(_Ty& value) noexcept;
 
 protected:
 	_STD atomic_uint64_t lastReserver;
@@ -160,7 +160,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcep
 }
 
 template<class _Ty, class _Alloc>
-bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
+bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept {
 	const auto mask = capacity_;
 	const auto ptr = data;
 
@@ -194,7 +194,7 @@ LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMo
 }
 
 template<class _Ty, class _Alloc>
-bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::try_dequeue(_Ty& value) noexcept {
+bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept {
 	const auto mask = MyBase::capacity_;
 
 	auto candidate = lastReserver.load();

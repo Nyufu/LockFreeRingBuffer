@@ -129,6 +129,7 @@
     <ClCompile Include="thirdparty\googletest\googletest\src\gtest-all.cc">
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="unittests\AllocateBuffer.cpp" />
     <ClCompile Include="unittests\CreateRingbuffer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
