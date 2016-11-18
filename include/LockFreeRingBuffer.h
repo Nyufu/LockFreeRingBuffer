@@ -43,7 +43,7 @@ private:
 	LockFreeRingBufferTrivialMovable& operator=(LockFreeRingBufferTrivialMovable&&) = delete;
 
 public:
-	LockFreeRingBufferTrivialMovable(uint32_t size) noexcept;
+	LockFreeRingBufferTrivialMovable(size_t size) noexcept;
 	~LockFreeRingBufferTrivialMovable() noexcept;
 
 	bool enqueue(const _Ty& value) noexcept;
@@ -79,7 +79,7 @@ protected:
 	using MyBase = LockFreeRingBufferTrivialMovable<_Ty, _Alloc>;
 
 public:
-	LockFreeRingBufferNonTrivialMovable(uint32_t size) noexcept;
+	LockFreeRingBufferNonTrivialMovable(size_t size) noexcept;
 
 	bool dequeue(_Ty& value) noexcept;
 
@@ -94,13 +94,13 @@ protected:
 #endif
 
 template<class _Ty, class _Alloc>
-LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(uint32_t size) noexcept
-	: capacity_{ (2ull << lzcnt64(size)) - 1 }
-	, data{ _Alloc::Allocate(2ull << lzcnt64(size)) }
+LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(size_t size) noexcept
+	: capacity_{ size ? (2ull << lzcnt64(size)) - 1 : 0 }
+	, data{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr }
 	, reserver{ 0 }
 	, last{ 0 }
 	, first{ 0 } {
-	assert(data != nullptr);
+  assert((size != 0 && data != nullptr) || (size == 0 && data == nullptr));
 }
 
 template<class _Ty, class _Alloc>
@@ -187,7 +187,7 @@ size_t LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::size_approx() const noexce
 }
 
 template<class _Ty, class _Alloc>
-LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMovable(uint32_t size) noexcept
+LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMovable(size_t size) noexcept
 	: MyBase(size),
 	lastReserver{ 0 } {
 }

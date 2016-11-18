@@ -9,7 +9,7 @@
 
 TEST(CreateRingbuffer, Int_0_size) {
 	LockFreeRingBuffer<int> ringBuffer(0);
-	EXPECT_EQ(ringBuffer.capacity(), 1);
+	EXPECT_EQ(ringBuffer.capacity(), 0);
 	EXPECT_EQ(ringBuffer.size_approx(), 0);
 }
 
@@ -27,7 +27,7 @@ TEST(CreateRingbuffer, Int_1000_size) {
 
 TEST(CreateRingbuffer, SharedPtrInt_0_size) {
 	LockFreeRingBuffer<std::shared_ptr<int>> ringBuffer(0);
-	EXPECT_EQ(ringBuffer.capacity(), 1);
+	EXPECT_EQ(ringBuffer.capacity(), 0);
 	EXPECT_EQ(ringBuffer.size_approx(), 0);
 }
 
@@ -45,7 +45,7 @@ TEST(CreateRingbuffer, SharedPtrInt_1000_size) {
 
 TEST(CreateRingbuffer, UniquePtrInt_0_size) {
 	LockFreeRingBuffer<std::unique_ptr<int>> ringBuffer(0);
-	EXPECT_EQ(ringBuffer.capacity(), 1);
+	EXPECT_EQ(ringBuffer.capacity(), 0);
 	EXPECT_EQ(ringBuffer.size_approx(), 0);
 }
 
