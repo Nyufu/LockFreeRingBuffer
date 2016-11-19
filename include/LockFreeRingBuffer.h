@@ -100,7 +100,7 @@ LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(
 	, reserver{ 0 }
 	, last{ 0 }
 	, first{ 0 } {
-  assert((size != 0 && data != nullptr) || (size == 0 && data == nullptr));
+	assert((size != 0 && data != nullptr) || (size == 0 && data == nullptr));
 }
 
 template<class _Ty, class _Alloc>
