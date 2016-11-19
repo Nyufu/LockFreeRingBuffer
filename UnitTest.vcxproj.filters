@@ -62,5 +62,8 @@
     <ClCompile Include="unittests\EnqueueDequeueOrder2Thread.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
+    <ClCompile Include="unittests\EnqueueDequeueOrder3Thread.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -133,6 +133,7 @@
     <ClCompile Include="unittests\Enqueue.cpp" />
     <ClCompile Include="unittests\EnqueueDequeueOrder1Thread.cpp" />
     <ClCompile Include="unittests\EnqueueDequeueOrder2Thread.cpp" />
+    <ClCompile Include="unittests\EnqueueDequeueOrder3Thread.cpp" />
     <ClCompile Include="unittests\Utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

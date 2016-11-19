@@ -15,8 +15,8 @@ TEST(EnqueueDequeueOrder1Thread, Int_MoreEnqueue) {
 
 	std::vector<int> outputData;
 
-	for (auto iter = intInputData.cbegin(); ; ) {
-		while (iter != intInputData.cend() && ringBuffer.enqueue(*iter))
+	for (auto iter = intInputData_Size33.cbegin(); ; ) {
+		while (iter != intInputData_Size33.cend() && ringBuffer.enqueue(*iter))
 			iter++;
 
 		for (int j = 0; j < batchNumber; j++) {
@@ -25,11 +25,11 @@ TEST(EnqueueDequeueOrder1Thread, Int_MoreEnqueue) {
 				outputData.push_back(value);
 		}
 
-		if (iter == intInputData.cend() && ringBuffer.size_approx() == 0)
+		if (iter == intInputData_Size33.cend() && ringBuffer.size_approx() == 0)
 			break;
 	}
 
-	EXPECT_THAT(intInputData, ::testing::ContainerEq(outputData));
+	EXPECT_THAT(intInputData_Size33, ::testing::ContainerEq(outputData));
 }
 
 TEST(EnqueueDequeueOrder1Thread, IntRef_MoreEnqueue) {
@@ -38,8 +38,8 @@ TEST(EnqueueDequeueOrder1Thread, IntRef_MoreEnqueue) {
 
 	std::vector<int> outputData;
 
-	for (auto iter = intInputData.cbegin(); ; ) {
-		while (iter != intInputData.cend()) {
+	for (auto iter = intInputData_Size33.cbegin(); ; ) {
+		while (iter != intInputData_Size33.cend()) {
 			auto& ref = *iter;
 			if (ringBuffer.enqueue(ref))
 				iter++;
@@ -53,11 +53,11 @@ TEST(EnqueueDequeueOrder1Thread, IntRef_MoreEnqueue) {
 				outputData.push_back(value);
 		}
 
-		if (iter == intInputData.cend() && ringBuffer.size_approx() == 0)
+		if (iter == intInputData_Size33.cend() && ringBuffer.size_approx() == 0)
 			break;
 	}
 
-	EXPECT_THAT(intInputData, ::testing::ContainerEq(outputData));
+	EXPECT_THAT(intInputData_Size33, ::testing::ContainerEq(outputData));
 }
 
 TEST(EnqueueDequeueOrder1Thread, Int_MoreDequeue) {
@@ -66,21 +66,21 @@ TEST(EnqueueDequeueOrder1Thread, Int_MoreDequeue) {
 
 	std::vector<int> outputData;
 
-	for (auto iter = intInputData.cbegin(); ; ) {
+	for (auto iter = intInputData_Size33.cbegin(); ; ) {
 
 		for (int j = 0; j < batchNumber; j++)
-			if (iter != intInputData.cend() && ringBuffer.enqueue(*iter))
+			if (iter != intInputData_Size33.cend() && ringBuffer.enqueue(*iter))
 				iter++;
 
 		int value = 0;
 		while (ringBuffer.dequeue(value))
 			outputData.push_back(value);
 
-		if (iter == intInputData.cend())
+		if (iter == intInputData_Size33.cend())
 			break;
 	}
 
-	EXPECT_THAT(intInputData, ::testing::ContainerEq(outputData));
+	EXPECT_THAT(intInputData_Size33, ::testing::ContainerEq(outputData));
 }
 
 TEST(EnqueueDequeueOrder1Thread, IntRef_MoreDequeue) {
@@ -89,10 +89,10 @@ TEST(EnqueueDequeueOrder1Thread, IntRef_MoreDequeue) {
 
 	std::vector<int> outputData;
 
-	for (auto iter = intInputData.cbegin(); ; ) {
+	for (auto iter = intInputData_Size33.cbegin(); ; ) {
 
 		for (int j = 0; j < batchNumber; j++)
-			if (iter != intInputData.cend()) {
+			if (iter != intInputData_Size33.cend()) {
 				auto& ref = *iter;
 				if (ringBuffer.enqueue(ref))
 					iter++;
@@ -102,11 +102,11 @@ TEST(EnqueueDequeueOrder1Thread, IntRef_MoreDequeue) {
 		while (ringBuffer.dequeue(value))
 			outputData.push_back(value);
 
-		if (iter == intInputData.cend())
+		if (iter == intInputData_Size33.cend())
 			break;
 	}
 
-	EXPECT_THAT(intInputData, ::testing::ContainerEq(outputData));
+	EXPECT_THAT(intInputData_Size33, ::testing::ContainerEq(outputData));
 }
 
 TEST(EnqueueDequeueOrder1Thread, SharedPtrInt_MoreEnqueue) {
@@ -116,7 +116,7 @@ TEST(EnqueueDequeueOrder1Thread, SharedPtrInt_MoreEnqueue) {
 	std::vector<std::shared_ptr<int>> inputData;
 	std::vector<std::shared_ptr<int>> outputData;
 
-	for (auto i : intInputData)
+	for (auto i : intInputData_Size33)
 		inputData.push_back(std::make_shared<int>(i));
 
 	for (auto iter = inputData.begin(); ; ) {
@@ -143,7 +143,7 @@ TEST(EnqueueDequeueOrder1Thread, SharedPtrInt_MoreDequeue) {
 	std::vector<std::shared_ptr<int>> inputData;
 	std::vector<std::shared_ptr<int>> outputData;
 
-	for (auto i : intInputData)
+	for (auto i : intInputData_Size33)
 		inputData.push_back(std::make_shared<int>(i));
 
 	for (auto iter = inputData.begin(); ; ) {

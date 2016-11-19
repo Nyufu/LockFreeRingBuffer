@@ -23,7 +23,7 @@ TEST(EnqueueDequeueOrder2Thread, Int_1Produces1ConsumerThreads) {
 		while (event_.load() != 2)
 			;
 
-		for (auto i : intInputData)
+		for (auto i : intInputData_Size33)
 			while (!ringBuffer.enqueue(i))
 				;
 
@@ -53,7 +53,7 @@ TEST(EnqueueDequeueOrder2Thread, Int_1Produces1ConsumerThreads) {
 	producer.join();
 	consumer.join();
 
-	EXPECT_THAT(intInputData, ::testing::ContainerEq(outputData));
+	EXPECT_THAT(intInputData_Size33, ::testing::ContainerEq(outputData));
 }
 
 TEST(EnqueueDequeueOrder2Thread, SharedPtrInt_1Produces1ConsumerThreads) {
@@ -64,7 +64,7 @@ TEST(EnqueueDequeueOrder2Thread, SharedPtrInt_1Produces1ConsumerThreads) {
 	std::atomic_int event_(0);
 	std::atomic_bool signal(true);
 
-	for (auto i : intInputData)
+	for (auto i : intInputData_Size33)
 		inputData.push_back(std::make_shared<int>(i));
 
 	std::thread producer([&] {
