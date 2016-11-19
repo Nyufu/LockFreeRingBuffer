@@ -114,6 +114,7 @@
     <ClInclude Include="include\Allocator.h" />
     <ClInclude Include="include\Config.h" />
     <ClInclude Include="include\LockFreeRingBuffer.h" />
+    <ClInclude Include="unittests\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thirdparty\googletest\googlemock\src\gmock-all.cc">
@@ -126,9 +127,13 @@
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="unittests\AllocateBuffer.cpp" />
+    <ClCompile Include="unittests\ComplexTests.cpp" />
     <ClCompile Include="unittests\CreateRingbuffer.cpp" />
     <ClCompile Include="unittests\Dequeue.cpp" />
     <ClCompile Include="unittests\Enqueue.cpp" />
+    <ClCompile Include="unittests\EnqueueDequeueOrder1Thread.cpp" />
+    <ClCompile Include="unittests\EnqueueDequeueOrder2Thread.cpp" />
+    <ClCompile Include="unittests\Utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
