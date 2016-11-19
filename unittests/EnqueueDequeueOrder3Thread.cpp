@@ -88,9 +88,8 @@ TEST(EnqueueDequeueOrder3Thread, Int_2Produces1ConsumerThreads) {
 	}
 }
 
-
 TEST(EnqueueDequeueOrder3Thread, Int_1Produces2ConsumerThreads) {
-	LockFreeRingBuffer<int> ringBuffer(15000);
+	LockFreeRingBuffer<int> ringBuffer(7000);
 
 	std::vector<int> outputData0;
 	std::vector<int> outputData1;
