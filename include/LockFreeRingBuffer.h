@@ -200,10 +200,10 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexc
 	decltype(candidate) incremented = 0;
 
 	do {
-		incremented = (candidate + 1) & mask;
-
-		if (MyBase::first.load() == incremented)
+		if (MyBase::first.load() == candidate)
 			return false;
+
+		incremented = (candidate + 1) & mask;
 
 	} while (!lastReserver.compare_exchange_weak(candidate, incremented));
 

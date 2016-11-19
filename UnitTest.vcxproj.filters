@@ -44,5 +44,8 @@
     <ClCompile Include="unittests\Enqueue.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
+    <ClCompile Include="unittests\Dequeue.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
