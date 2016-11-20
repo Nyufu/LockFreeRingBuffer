@@ -14,7 +14,7 @@ int32_t destructorCallCounter = 0;
 
 template<class _Ty>
 struct MockAllocator {
-	static _Ty* Allocate(size_t size) noexcept {
+	static _Ty* Allocate(size_t) noexcept {
 		constructorCallCounter++;
 		return (reinterpret_cast<_Ty*>(0xF0));
 	}
@@ -44,7 +44,7 @@ int32_t destructorCallCounter = 0;
 
 template<class _Ty>
 struct MockAllocator {
-	static _Ty* Allocate(size_t size) noexcept {
+	static _Ty* Allocate(size_t) noexcept {
 		constructorCallCounter++;
 		return (reinterpret_cast<_Ty*>(0xF0));
 	}
@@ -175,7 +175,7 @@ int32_t destructorCallCounter = 0;
 
 template<class _Ty>
 struct MockAllocator {
-	static _Ty* Allocate(size_t size) noexcept {
+	static _Ty* Allocate(size_t) noexcept {
 		constructorCallCounter++;
 		return (reinterpret_cast<_Ty*>(0xF0));
 	}

@@ -38,7 +38,7 @@
 
 using namespace std::chrono_literals;
 
-constexpr size_t Number = 4;
+constexpr size_t Number = 2;
 constexpr auto timeLimit = 1000ms;
 
 void Test1();
@@ -94,33 +94,33 @@ void Test1() {
 			counterProducer.fetch_add(counter);
 		}, 2),
 
-		std::thread([&ringBuffer, &event_, &runIt, &counterProducer](const int i) {
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			int64_t counter = 0;
-
-			while (runIt)
-				if (ringBuffer.enqueue(i))
-					counter++;
-
-			counterProducer.fetch_add(counter);
-		}, 3),
-
-		std::thread([&ringBuffer, &event_, &runIt, &counterProducer](const int i) {
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			int64_t counter = 0;
-
-			while (runIt)
-				if (ringBuffer.enqueue(i))
-					counter++;
-
-			counterProducer.fetch_add(counter);
-		}, 4)
+		//std::thread([&ringBuffer, &event_, &runIt, &counterProducer](const int i) {
+		//	event_++;
+		//	while (event_.load() != (Number * 2))
+		//		;
+		//
+		//	int64_t counter = 0;
+		//
+		//	while (runIt)
+		//		if (ringBuffer.enqueue(i))
+		//			counter++;
+		//
+		//	counterProducer.fetch_add(counter);
+		//}, 3),
+		//
+		//std::thread([&ringBuffer, &event_, &runIt, &counterProducer](const int i) {
+		//	event_++;
+		//	while (event_.load() != (Number * 2))
+		//		;
+		//
+		//	int64_t counter = 0;
+		//
+		//	while (runIt)
+		//		if (ringBuffer.enqueue(i))
+		//			counter++;
+		//
+		//	counterProducer.fetch_add(counter);
+		//}, 4)
 	};
 
 	std::thread consumer[Number] = {
@@ -158,39 +158,39 @@ void Test1() {
 				counterConsumer.fetch_add(localConsumerCounter[i + 1]);
 		}),
 
-		std::thread([&event_, &runIt, &ringBuffer, &counterConsumer]() {
-			int value = 0;
-			int64_t localConsumerCounter[Number + 1];
-			memset(&localConsumerCounter, 0, sizeof(int64_t) * (Number + 1));
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.dequeue(value))
-					localConsumerCounter[value]++;
-
-			for (size_t i = 0; i < Number; i++)
-				counterConsumer.fetch_add(localConsumerCounter[i + 1]);
-		}),
-
-		std::thread([&event_, &runIt, &ringBuffer, &counterConsumer]() {
-			int value = 0;
-			int64_t localConsumerCounter[Number + 1];
-			memset(&localConsumerCounter, 0, sizeof(int64_t) * (Number + 1));
-
-			event_++;
-			while (event_.load() != (Number * 2))
-				;
-
-			while (runIt)
-				if (ringBuffer.dequeue(value))
-					localConsumerCounter[value]++;
-
-			for (size_t i = 0; i < Number; i++)
-				counterConsumer.fetch_add(localConsumerCounter[i + 1]);
-		})
+		//std::thread([&event_, &runIt, &ringBuffer, &counterConsumer]() {
+		//	int value = 0;
+		//	int64_t localConsumerCounter[Number + 1];
+		//	memset(&localConsumerCounter, 0, sizeof(int64_t) * (Number + 1));
+		//
+		//	event_++;
+		//	while (event_.load() != (Number * 2))
+		//		;
+		//
+		//	while (runIt)
+		//		if (ringBuffer.dequeue(value))
+		//			localConsumerCounter[value]++;
+		//
+		//	for (size_t i = 0; i < Number; i++)
+		//		counterConsumer.fetch_add(localConsumerCounter[i + 1]);
+		//}),
+		//
+		//std::thread([&event_, &runIt, &ringBuffer, &counterConsumer]() {
+		//	int value = 0;
+		//	int64_t localConsumerCounter[Number + 1];
+		//	memset(&localConsumerCounter, 0, sizeof(int64_t) * (Number + 1));
+		//
+		//	event_++;
+		//	while (event_.load() != (Number * 2))
+		//		;
+		//
+		//	while (runIt)
+		//		if (ringBuffer.dequeue(value))
+		//			localConsumerCounter[value]++;
+		//
+		//	for (size_t i = 0; i < Number; i++)
+		//		counterConsumer.fetch_add(localConsumerCounter[i + 1]);
+		//})
 	};
 
 	while (event_.load() != (Number * 2))

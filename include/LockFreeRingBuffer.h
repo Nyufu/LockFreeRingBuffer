@@ -29,7 +29,8 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4324 4711 4820)
+#pragma warning(disable: 4324)
+// Warning C4324 'LockFreeRingBufferTrivialMovable<_Ty,_Alloc>': structure was padded due to alignment specifier https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4324
 #endif
 
 static constexpr size_t cacheline_size = 64;
