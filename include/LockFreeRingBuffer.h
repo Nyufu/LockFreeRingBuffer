@@ -28,8 +28,10 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4711)
+#pragma warning(disable: 4324 4711 4820)
 #endif
+
+static constexpr size_t cacheline_size = 64;
 
 template<class _Ty, class _Alloc = Allocator<_Ty>>
 class LockFreeRingBufferTrivialMovable {
@@ -55,13 +57,19 @@ public:
 	size_t size_approx() const noexcept;
 
 protected:
-	const size_t capacity_;
+	struct Pack {
+		const size_t capacity;
+		_Ty* const	 data;
+	};
 
-	_Ty* const data;
+	static_assert(sizeof(Pack) < cacheline_size, "The capacity and the data pointer don't fit into a cache line!");
 
-	_STD atomic_uint64_t reserver;
-	_STD atomic_uint64_t last;
-	_STD atomic_uint64_t first;
+protected:
+	alignas(cacheline_size)Pack				  pack;
+
+	alignas(cacheline_size)_STD atomic_size_t reserver;
+	alignas(cacheline_size)_STD atomic_size_t last;
+	alignas(cacheline_size)_STD atomic_size_t first;
 };
 
 template<class _Ty, class _Alloc = Allocator<_Ty>>
@@ -84,7 +92,7 @@ public:
 	bool dequeue(_Ty& value) noexcept;
 
 protected:
-	_STD atomic_uint64_t lastReserver;
+	alignas(cacheline_size)_STD atomic_uint64_t lastReserver;
 };
 
 #if defined(__clang__) && __clang__
@@ -95,22 +103,22 @@ protected:
 
 template<class _Ty, class _Alloc>
 LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(size_t size) noexcept
-	: capacity_{ size ? (2ull << lzcnt64(size)) - 1 : 0 }
-	, data{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr }
+	: pack{ { size ? (2ull << lzcnt64(size)) - 1 : 0ull },
+			{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr } }
 	, reserver{ 0 }
 	, last{ 0 }
 	, first{ 0 } {
-	assert((size != 0 && data != nullptr) || (size == 0 && data == nullptr));
+	assert((size != 0 && pack.data != nullptr) || (size == 0 && pack.data == nullptr));
 }
 
 template<class _Ty, class _Alloc>
 LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::~LockFreeRingBufferTrivialMovable() noexcept {
-	_Alloc::DeAllocate(data);
+	_Alloc::DeAllocate(pack.data);
 }
 
 template<class _Ty, class _Alloc>
 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) noexcept {
-	const auto mask = capacity_;
+	const auto mask = pack.capacity;
 
 	auto candidate = reserver.load();
 	decltype(candidate) incremented = 0;
@@ -125,7 +133,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) no
 
 	auto reserved = candidate;
 
-	data[reserved] = value;
+	pack.data[reserved] = value;
 
 	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
@@ -135,7 +143,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) no
 
 template<class _Ty, class _Alloc>
 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcept {
-	const auto mask = capacity_;
+	const auto mask = pack.capacity;
 
 	auto candidate = reserver.load();
 	decltype(candidate) incremented = 0;
@@ -150,7 +158,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcep
 
 	auto reserved = candidate;
 
-	data[reserved] = _STD forward<_Ty>(value);
+	pack.data[reserved] = _STD forward<_Ty>(value);
 
 	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
@@ -160,8 +168,8 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcep
 
 template<class _Ty, class _Alloc>
 bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept {
-	const auto mask = capacity_;
-	const auto ptr = data;
+	const auto mask = pack.capacity;
+	const auto ptr = pack.data;
 
 	auto currentLast = last.load();
 
@@ -178,7 +186,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept
 
 template<class _Ty, class _Alloc>
 size_t LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::capacity() const noexcept {
-	return capacity_;
+	return pack.capacity;
 }
 
 template<class _Ty, class _Alloc>
@@ -194,7 +202,7 @@ LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMo
 
 template<class _Ty, class _Alloc>
 bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept {
-	const auto mask = MyBase::capacity_;
+	const auto mask = MyBase::pack.capacity;
 
 	auto candidate = lastReserver.load();
 	decltype(candidate) incremented = 0;
@@ -209,7 +217,7 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexc
 
 	auto reserved = candidate;
 
-	value = _STD move(MyBase::data[reserved]);
+	value = _STD move(MyBase::pack.data[reserved]);
 
 	for (auto savedReserved = reserved; !MyBase::last.compare_exchange_weak(reserved, incremented); reserved = savedReserved)
 		;
@@ -224,6 +232,8 @@ _STD conditional_t <
 	LockFreeRingBufferTrivialMovable<_Ty, _Alloc>,
 	LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>
 >;
+
+static_assert((sizeof(LockFreeRingBuffer<void*>) & (cacheline_size - 1)) == 0, "The LockFreeRingBuffer has unexpected size!");
 
 #ifdef _MSC_VER
 #pragma warning(pop)
