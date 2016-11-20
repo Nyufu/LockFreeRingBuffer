@@ -10,6 +10,9 @@
     <ClInclude Include="include\LockFreeRingBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="unittests\Utility.h">
+      <Filter>unittests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -39,6 +42,33 @@
       <Filter>unittests</Filter>
     </ClCompile>
     <ClCompile Include="unittests\AllocateBuffer.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\Enqueue.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\Dequeue.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\ComplexTests.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\Utility.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\EnqueueDequeueOrder1Thread.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\EnqueueDequeueOrder2Thread.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\EnqueueDequeueOrder3Thread.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\EnqueueDequeueOrder4Thread.cpp">
+      <Filter>unittests</Filter>
+    </ClCompile>
+    <ClCompile Include="unittests\StressTest.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
   </ItemGroup>
