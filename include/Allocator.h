@@ -30,45 +30,45 @@
 #pragma warning( push, 0 )
 
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 #include <Windows.h>
 
 #pragma warning( pop )
 #endif
 
-template<class _Ty>
+
+template<class _Ty, class Enable = void>
 struct Allocator {
-	_CONSTEXPR14 static _Ty* Allocate(size_t size) noexcept {
+};
+
+template<class _Ty >
+struct Allocator<_Ty, typename _STD enable_if<_STD is_pod<_Ty>::value>::type > {
+	static _Ty* Allocate(size_t size) {
 #if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
-		return reinterpret_cast<_Ty*>(::HeapAlloc(::GetProcessHeap(), (_debug ? HEAP_ZERO_MEMORY : 0ul), (size * sizeof(_Ty))));
+		auto ptr = reinterpret_cast<_Ty*>(::HeapAlloc(::GetProcessHeap(), (_debug ? HEAP_ZERO_MEMORY : 0ul), (size * sizeof(_Ty))));
+		if (ptr == nullptr)
+			throw _STD bad_alloc();
+		return ptr;
 #else
-		return ::new (_STD nothrow) _Ty[size];
+		return ::new _Ty[size];
 #endif
 	}
 
-	template<class _Rty>
-	_CONSTEXPR14 static _Rty Allocate(size_t size) noexcept {
-#if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
-		return reinterpret_cast<_Rty>(::HeapAlloc(::GetProcessHeap(), (_debug ? HEAP_ZERO_MEMORY : 0ul), (size * sizeof(_Ty))));
-#else
-		return reinterpret_cast<_Rty>(::new (_STD nothrow) _Ty[size]);
-#endif
-	}
-
-	_CONSTEXPR14 static void DeAllocate(_Ty* const ptr) noexcept {
+	static void DeAllocate(_Ty* const ptr) noexcept {
 #if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
 		auto result = ::HeapFree(::GetProcessHeap(), 0ul, reinterpret_cast<void*>(ptr)); assert(result); (void)result;
 #else
 		::delete[] ptr;
 #endif
 	}
+};
 
-	template<class _Rty>
-	_CONSTEXPR14 static void DeAllocate(_Rty const ptr) noexcept {
-#if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
-		auto result = ::HeapFree(::GetProcessHeap(), 0ul, reinterpret_cast<void*>(ptr)); assert(result); (void)result;
-#else
-		::delete[] reinterpret_cast<_Ty*>(ptr);
-#endif
+template<class _Ty >
+struct Allocator<_Ty, typename _STD enable_if<!_STD is_pod<_Ty>::value>::type > {
+	static _Ty* Allocate(size_t size) {
+		return ::new _Ty[size];
+	}
+
+	static void DeAllocate(_Ty* const ptr) noexcept {
+		::delete[] ptr;
 	}
 };

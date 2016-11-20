@@ -47,11 +47,11 @@ private:
 	LockFreeRingBufferTrivialMovable& operator=(LockFreeRingBufferTrivialMovable&&) = delete;
 
 public:
-	LockFreeRingBufferTrivialMovable(size_t size) noexcept;
+	LockFreeRingBufferTrivialMovable(size_t size);
 	~LockFreeRingBufferTrivialMovable() noexcept;
 
 	bool enqueue(const _Ty& value) noexcept;
-	bool enqueue(_Ty&& value) noexcept;
+	bool enqueue(_Ty&& value) noexcept(_STD is_nothrow_move_assignable<_Ty>::value);
 
 	bool dequeue(_Ty& value) noexcept;
 
@@ -89,9 +89,9 @@ protected:
 	using MyBase = LockFreeRingBufferTrivialMovable<_Ty, _Alloc>;
 
 public:
-	LockFreeRingBufferNonTrivialMovable(size_t size) noexcept;
+	LockFreeRingBufferNonTrivialMovable(size_t size);
 
-	bool dequeue(_Ty& value) noexcept;
+	bool dequeue(_Ty& value) noexcept(_STD is_nothrow_move_assignable<_Ty>::value);
 
 protected:
 	alignas(cacheline_size)_STD atomic_uint64_t lastReserver;
@@ -104,7 +104,7 @@ protected:
 #endif
 
 template<class _Ty, class _Alloc>
-LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(size_t size) noexcept
+LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(size_t size)
 	: pack{ { size ? (2ull << lzcnt64(size)) - 1 : 0ull },
 			{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr } }
 	, reserver{ 0 }
@@ -144,7 +144,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) no
 }
 
 template<class _Ty, class _Alloc>
-bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcept {
+bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcept(_STD is_nothrow_move_assignable<_Ty>::value) {
 	const auto mask = pack.capacity;
 
 	auto candidate = reserver.load();
@@ -197,13 +197,13 @@ size_t LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::size_approx() const noexce
 }
 
 template<class _Ty, class _Alloc>
-LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMovable(size_t size) noexcept
+LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferNonTrivialMovable(size_t size)
 	: MyBase(size),
 	lastReserver{ 0 } {
 }
 
 template<class _Ty, class _Alloc>
-bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept {
+bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexcept(_STD is_nothrow_move_assignable<_Ty>::value) {
 	const auto mask = MyBase::pack.capacity;
 
 	auto candidate = lastReserver.load();
@@ -229,11 +229,11 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexc
 
 template<class _Ty, class _Alloc = Allocator<_Ty>>
 using LockFreeRingBuffer =
-_STD conditional_t <
+typename _STD conditional <
 	_STD is_trivially_move_assignable<_Ty>::value,
 	LockFreeRingBufferTrivialMovable<_Ty, _Alloc>,
 	LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>
->;
+>::type;
 
 static_assert((sizeof(LockFreeRingBuffer<void*>) & (cacheline_size - 1)) == 0, "The LockFreeRingBuffer has unexpected size!");
 
