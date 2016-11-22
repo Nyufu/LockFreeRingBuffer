@@ -13,6 +13,7 @@
     <ClInclude Include="unittests\Utility.h">
       <Filter>unittests</Filter>
     </ClInclude>
+    <ClInclude Include="helper\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -21,23 +22,8 @@
     <Filter Include="unittests">
       <UniqueIdentifier>{76f3bde9-25a1-4392-9a1b-dc94091471dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gmock">
-      <UniqueIdentifier>{c8002d02-a5ff-4267-a529-dd70d02cf533}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gtest">
-      <UniqueIdentifier>{d23f9c14-285f-4ddf-90f4-5aca71c78d66}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="thirdparty\googletest\googletest\src\gtest-all.cc">
-      <Filter>gtest</Filter>
-    </ClCompile>
-    <ClCompile Include="thirdparty\googletest\googlemock\src\gmock-all.cc">
-      <Filter>gmock</Filter>
-    </ClCompile>
-    <ClCompile Include="thirdparty\googletest\googlemock\src\gmock_main.cc">
-      <Filter>gmock</Filter>
-    </ClCompile>
     <ClCompile Include="unittests\CreateRingbuffer.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
@@ -71,5 +57,6 @@
     <ClCompile Include="unittests\StressTest.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
+    <ClCompile Include="helper\pch.cpp" />
   </ItemGroup>
 </Project>

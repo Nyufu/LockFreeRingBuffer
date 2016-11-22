@@ -39,9 +39,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <PureConfiguration>Debug</PureConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Release'))" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PureConfiguration>Release</PureConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -54,15 +56,18 @@
     <ThirdPartyDir>$(ProjectDir)thirdparty\</ThirdPartyDir>
     <GTestRoot>$(ThirdPartyDir)googletest\</GTestRoot>
     <IncludePath>$(IncludePath);$(GTestRoot)googlemock\;$(GTestRoot)googlemock\include\;$(GTestRoot)googletest\;$(GTestRoot)googletest\include\</IncludePath>
+    <LibraryPath>$(LibraryPath);$(ThirdPartyDir)googletest_prebuilt\$(PlatformTarget)\$(PureConfiguration)\</LibraryPath>
     <SourcePath>$(SourcePath);$(GTestRoot)googlemock\;$(GTestRoot)googletest\</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PreprocessorDefinitions>GTEST_LANG_CXX11;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>gmock.lib;gmock_main.lib;gtest.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -78,13 +83,18 @@
     <ClCompile>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <ForcedIncludeFiles>clang_gtest_helper.h</ForcedIncludeFiles>
-      <AdditionalOptions>-std=c++1z %(AdditionalOptions)</AdditionalOptions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Debug'))">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(Configuration.Contains('Release'))">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -92,16 +102,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Clang|x64'">
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Clang|x64'">
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -113,20 +119,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="pch.h" />
     <ClInclude Include="include\Allocator.h" />
     <ClInclude Include="include\Config.h" />
     <ClInclude Include="include\LockFreeRingBuffer.h" />
     <ClInclude Include="unittests\Utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="thirdparty\googletest\googlemock\src\gmock-all.cc">
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="thirdparty\googletest\googlemock\src\gmock_main.cc">
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="thirdparty\googletest\googletest\src\gtest-all.cc">
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    <ClCompile Include="pch.cpp">
+      <ExcludedFromBuild Condition="$(Configuration.Contains('Clang'))">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="!$(Configuration.Contains('Clang'))">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="unittests\AllocateBuffer.cpp" />
     <ClCompile Include="unittests\ComplexTests.cpp" />
@@ -141,6 +143,4 @@
     <ClCompile Include="unittests\Utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>
