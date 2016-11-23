@@ -137,7 +137,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(const _Ty& value) no
 
 	pack.data[reserved] = value;
 
-	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
+	for (const auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
 
 	return true;
@@ -162,7 +162,7 @@ bool LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::enqueue(_Ty&& value) noexcep
 
 	pack.data[reserved] = _STD forward<_Ty>(value);
 
-	for (auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
+	for (const auto savedReserver = reserved; !first.compare_exchange_weak(reserved, incremented); reserved = savedReserver)
 		;
 
 	return true;
@@ -221,7 +221,7 @@ bool LockFreeRingBufferNonTrivialMovable<_Ty, _Alloc>::dequeue(_Ty& value) noexc
 
 	value = _STD move(MyBase::pack.data[reserved]);
 
-	for (auto savedReserved = reserved; !MyBase::last.compare_exchange_weak(reserved, incremented); reserved = savedReserved)
+	for (const auto savedReserved = reserved; !MyBase::last.compare_exchange_weak(reserved, incremented); reserved = savedReserved)
 		;
 
 	return true;
