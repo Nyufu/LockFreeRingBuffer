@@ -105,7 +105,7 @@ protected:
 
 template<class _Ty, class _Alloc>
 LockFreeRingBufferTrivialMovable<_Ty, _Alloc>::LockFreeRingBufferTrivialMovable(size_t size)
-	: pack{ { size ? (2ull << lzcnt64(size)) - 1 : 0ull },
+	: pack{ { size ? (2ul << lzcnt64(size)) - 1 : 0ul },
 			{ size ? _Alloc::Allocate(2ull << lzcnt64(size)) : nullptr } }
 	, reserver{ 0 }
 	, last{ 0 }

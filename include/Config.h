@@ -22,12 +22,6 @@
 
 #pragma once
 
-#include <yvals.h>
-
-#if !defined( _CONSTEXPR14 )
-#define _CONSTEXPR14 inline
-#endif /* _HAS_CONSTEXPR14 */
-
 #define WINAPI_ALLOCATOR 0
 
 constexpr int _debug =
