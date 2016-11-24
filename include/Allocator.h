@@ -35,25 +35,24 @@
 #pragma warning( pop )
 #endif
 
-
-template<class _Ty, class Enable = void>
+template<class Ty, class Enable = void>
 struct Allocator {
 };
 
-template<class _Ty >
-struct Allocator<_Ty, typename _STD enable_if<_STD is_pod<_Ty>::value>::type > {
-	static _Ty* Allocate(size_t size) {
+template<class Ty >
+struct Allocator<Ty, typename ::std::enable_if<::std::is_pod<Ty>::value>::type > {
+	static Ty* Allocate(::std::size_t size) {
 #if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
-		auto ptr = reinterpret_cast<_Ty*>(::HeapAlloc(::GetProcessHeap(), (_debug ? HEAP_ZERO_MEMORY : 0ul), (size * sizeof(_Ty))));
+		auto ptr = reinterpret_cast<Ty*>(::HeapAlloc(::GetProcessHeap(), (_debug ? HEAP_ZERO_MEMORY : 0ul), (size * sizeof(Ty))));
 		if (ptr == nullptr)
-			throw _STD bad_alloc();
+			throw ::std::bad_alloc{};
 		return ptr;
 #else
-		return ::new _Ty[size];
+		return ::new Ty[size];
 #endif
 	}
 
-	static void DeAllocate(_Ty* const ptr) noexcept {
+	static void DeAllocate(Ty* const ptr) noexcept {
 #if (defined (WINAPI_ALLOCATOR) && WINAPI_ALLOCATOR)
 		auto result = ::HeapFree(::GetProcessHeap(), 0ul, reinterpret_cast<void*>(ptr)); assert(result); (void)result;
 #else
@@ -62,13 +61,13 @@ struct Allocator<_Ty, typename _STD enable_if<_STD is_pod<_Ty>::value>::type > {
 	}
 };
 
-template<class _Ty >
-struct Allocator<_Ty, typename _STD enable_if<!_STD is_pod<_Ty>::value>::type > {
-	static _Ty* Allocate(size_t size) {
-		return ::new _Ty[size];
+template<class Ty >
+struct Allocator<Ty, typename ::std::enable_if<!::std::is_pod<Ty>::value>::type > {
+	static Ty* Allocate(::std::size_t size) {
+		return ::new Ty[size];
 	}
 
-	static void DeAllocate(_Ty* const ptr) noexcept {
+	static void DeAllocate(Ty* const ptr) noexcept {
 		::delete[] ptr;
 	}
 };
