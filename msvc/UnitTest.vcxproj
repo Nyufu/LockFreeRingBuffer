@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E45D5FC8-FCD5-47EC-B738-F1B2B4902A3B}</ProjectGuid>
+    <ProjectGuid>{5393D367-708E-468F-9AFC-18D4627786E7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>LockFreeRingBuffer</RootNamespace>
+    <RootNamespace>UnitTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -39,9 +39,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <PureConfiguration>Debug</PureConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.Contains('Release'))" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PureConfiguration>Release</PureConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -51,17 +53,23 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup>
-    <ThirdPartyDir>$(ProjectDir)thirdparty\</ThirdPartyDir>
-    <IncludePath>$(IncludePath);$(ThirdPartyDir)</IncludePath>
+    <ThirdPartyDir>$(SolutionDir)thirdparty\</ThirdPartyDir>
+    <GTestRoot>$(ThirdPartyDir)googletest\</GTestRoot>
+    <IncludePath>$(IncludePath);$(GTestRoot)googlemock\;$(GTestRoot)googlemock\include\;$(GTestRoot)googletest\;$(GTestRoot)googletest\include\</IncludePath>
+    <LibraryPath>$(LibraryPath);$(ThirdPartyDir)googletest_prebuilt\$(PlatformTarget)\$(PureConfiguration)\</LibraryPath>
+    <SourcePath>$(SourcePath);$(GTestRoot)googlemock\;$(GTestRoot)googletest\</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>GTEST=1;GTEST_LANG_CXX11;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>gmock.lib;gmock_main.lib;gtest.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
+      <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="!$(Configuration.Contains('Clang'))">
@@ -76,12 +84,18 @@
     <ClCompile>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalOptions>-std=c++1z %(AdditionalOptions)</AdditionalOptions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains('Debug'))">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(Configuration.Contains('Release'))">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -89,16 +103,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Clang|x64'">
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Clang|x64'">
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -110,14 +120,28 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\Allocator.h" />
-    <ClInclude Include="include\Config.h" />
-    <ClInclude Include="include\LockFreeRingBuffer.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\include\Allocator.h" />
+    <ClInclude Include="..\include\Config.h" />
+    <ClInclude Include="..\include\LockFreeRingBuffer.h" />
+    <ClInclude Include="..\unittests\Utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Main.cpp" />
+    <ClCompile Include="pch.cpp">
+      <ExcludedFromBuild Condition="$(Configuration.Contains('Clang'))">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="!$(Configuration.Contains('Clang'))">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\unittests\AllocateBuffer.cpp" />
+    <ClCompile Include="..\unittests\ComplexTests.cpp" />
+    <ClCompile Include="..\unittests\CreateRingbuffer.cpp" />
+    <ClCompile Include="..\unittests\Dequeue.cpp" />
+    <ClCompile Include="..\unittests\Enqueue.cpp" />
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder1Thread.cpp" />
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder2Thread.cpp" />
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder3Thread.cpp" />
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder4Thread.cpp" />
+    <ClCompile Include="..\unittests\StressTest.cpp" />
+    <ClCompile Include="..\unittests\Utility.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

@@ -9,18 +9,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Allocator.h">
+    <ClInclude Include="..\include\Allocator.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\Config.h">
+    <ClInclude Include="..\include\Config.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\LockFreeRingBuffer.h">
+    <ClInclude Include="..\include\LockFreeRingBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Main.cpp">
+    <ClCompile Include="..\source\Main.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

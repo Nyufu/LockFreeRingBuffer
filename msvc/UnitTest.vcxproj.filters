@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="include\Allocator.h">
+    <ClInclude Include="..\include\Allocator.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\Config.h">
+    <ClInclude Include="..\include\Config.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\LockFreeRingBuffer.h">
+    <ClInclude Include="..\include\LockFreeRingBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="unittests\Utility.h">
+    <ClInclude Include="..\unittests\Utility.h">
       <Filter>unittests</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
@@ -24,37 +24,37 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="unittests\CreateRingbuffer.cpp">
+    <ClCompile Include="..\unittests\CreateRingbuffer.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\AllocateBuffer.cpp">
+    <ClCompile Include="..\unittests\AllocateBuffer.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\Enqueue.cpp">
+    <ClCompile Include="..\unittests\Enqueue.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\Dequeue.cpp">
+    <ClCompile Include="..\unittests\Dequeue.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\ComplexTests.cpp">
+    <ClCompile Include="..\unittests\ComplexTests.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\Utility.cpp">
+    <ClCompile Include="..\unittests\Utility.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\EnqueueDequeueOrder1Thread.cpp">
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder1Thread.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\EnqueueDequeueOrder2Thread.cpp">
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder2Thread.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\EnqueueDequeueOrder3Thread.cpp">
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder3Thread.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\EnqueueDequeueOrder4Thread.cpp">
+    <ClCompile Include="..\unittests\EnqueueDequeueOrder4Thread.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
-    <ClCompile Include="unittests\StressTest.cpp">
+    <ClCompile Include="..\unittests\StressTest.cpp">
       <Filter>unittests</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
