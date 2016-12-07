@@ -22,10 +22,12 @@
 
 #pragma once
 
-#define WINAPI_ALLOCATOR 0
+#if !defined(WINAPI_ALLOCATOR)
+#	define WINAPI_ALLOCATOR			0
+#endif
 
 constexpr int _debug =
-#if defined(_DEBUG)
+#if !defined(NDEBUG)
 1;
 #else
 0;
