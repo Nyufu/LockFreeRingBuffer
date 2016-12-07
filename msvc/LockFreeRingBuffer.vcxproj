@@ -111,7 +111,7 @@
     <ClInclude Include="..\include\LockFreeRingBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\Main.cpp" />
+    <ClCompile Include="..\examples\Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

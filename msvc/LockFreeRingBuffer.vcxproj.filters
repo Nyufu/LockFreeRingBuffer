@@ -4,7 +4,7 @@
     <Filter Include="include">
       <UniqueIdentifier>{70af5454-6cbc-4762-9145-9dd7ca39cf58}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source">
+    <Filter Include="examples">
       <UniqueIdentifier>{233dea96-914c-4932-9053-679c00984c06}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -20,8 +20,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\Main.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="..\examples\Main.cpp">
+      <Filter>examples</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
