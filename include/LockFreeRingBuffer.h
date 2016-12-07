@@ -100,7 +100,7 @@ protected:
 	alignas(cacheline_size)::std::atomic_size_t lastReserver;
 };
 
-#if defined(__clang__) && __clang__
+#if defined(__GNUC__) && __GNUC__
 #define lzcnt64(x) __builtin_clzll(x)
 #else
 #define lzcnt64(x) __lzcnt64(x)
